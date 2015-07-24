@@ -181,6 +181,7 @@ var HourChart = (function() {
 		bar.setWidth(minutes_width);
 
 		if(typeof item_options !== 'undefined' && item_options.onClick) {
+			bar.hour_bar.style.cursor = 'pointer';
 			bar.hour_bar.onclick = function() {
 				item_options.onClick();
 			};
@@ -206,5 +207,13 @@ hour_chart.add('10:00', '11:29', {
 	background: 'red',
 	onClick: function() {
 		alert('red click');
+	}
+});
+
+var hour_chart_2 = new HourChart('hour_chart_2');
+hour_chart_2.add('02:10', '15:00');
+hour_chart_2.add('18:00', '18:20', {
+	onClick: function() {
+		alert('click 18:00 - 18:20');
 	}
 });
