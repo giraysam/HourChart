@@ -1,6 +1,13 @@
-var HourChart = (function() {
+/*jslint nomen: true, plusplus: true */
+/*globals alert, console*/
 
-	var chartDiv, scalaDiv, scalaHours, options;
+
+var HourChart = (function () {
+    'use strict';
+
+	var chartDiv, scalaDiv, scalaHours, options, init,
+        pad2, insertElement, getHourSpace, getMinuteSpace, calculateTimeDiff,
+        HoursBar, logger;
 
 	options = {
 		fontSize: 12,
@@ -22,8 +29,8 @@ var HourChart = (function() {
 		init(_chartDiv);
 	}
 
-	var init = function(_chartDiv) {
-		var i, hours, hours_between_space, chart_div_w, hour_split, half_split;
+	init = function (_chartDiv) {
+		var i, hours, hour_space, chart_div_w, hour_split, half_split;
 
 		chartDiv = document.getElementById(_chartDiv);
 
@@ -41,16 +48,16 @@ var HourChart = (function() {
 		scalaHours.style.width = chart_div_w + 'px';
 		scalaHours.style.height = '20px';
 
-		hours_between_space = calculateHoursBetweenSpace(chart_div_w);
+		hour_space = getHourSpace(chart_div_w);
 
-		for(i = 0; i < 25; i++) {
+		for (i = 0; i < 25; i++) {
 
 			hours = document.createElement('span');
 			hours.innerHTML = pad2(i);
 			hours.style.fontSize = options.fontSize + 'px';
 			hours.style.position = 'absolute';
 			hours.style.top = '0px';
-			hours.style.left = (((i * hours_between_space) + hours_between_space / 2) - options.fontSize / 2) +'px';
+			hours.style.left = (((i * hour_space) + hour_space / 2) - options.fontSize / 2) + 'px';
 
 			scalaHours.appendChild(hours);
 
@@ -60,12 +67,12 @@ var HourChart = (function() {
 			hour_split.style.position = 'absolute';
 			hour_split.style.backgroundColor = options.hourSplitBackground;
 			hour_split.style.top = '0px';
-			hour_split.style.left = ((i * hours_between_space) + hours_between_space / 2) +'px';
+			hour_split.style.left = ((i * hour_space) + hour_space / 2) + 'px';
 
 			scalaDiv.appendChild(hour_split);
 		}
 
-		for(i = 1; i < 25; i++) {
+		for (i = 1; i < 25; i++) {
 
 			half_split = document.createElement('div');
 			half_split.style.width = '2px';
@@ -73,7 +80,7 @@ var HourChart = (function() {
 			half_split.style.position = 'absolute';
 			half_split.style.backgroundColor = options.halfSplitBackground;
 			half_split.style.top = '0px';
-			half_split.style.left = (i * hours_between_space) +'px';
+			half_split.style.left = (i * hour_space) + 'px';
 
 			scalaDiv.appendChild(half_split);
 		}
@@ -82,51 +89,12 @@ var HourChart = (function() {
 		insertElement(chartDiv, scalaDiv);
 	};
 
-	Object.prototype.extend = function(obj) {
-       for (var i in obj) {
-          if (obj.hasOwnProperty(i)) {
-             this[i] = obj[i];
-          }
-       }
-    };
-
-	var pad2 = function(number) {
-		return (number < 10 ? '0' : '') + number;
-	};
-
-	var insertElement = function (target, element) {
-		target.appendChild(element);
-	};
-
-	var calculateHoursBetweenSpace = function (chart_w) {
-		return (chart_w / 25);
-	};
-
-	var calculateMinutesBetweenSpace = function(hour_between_space) {
-		return (hour_between_space / 60);
-	};
-
-	var calculateTimeDiff = function(start_date, end_date) {
-		var start_time, end_time;
-
-		start_time = new Date();
-		end_time = new Date();
-
-		start_time.setHours(start_date.getHours());
-		start_time.setMinutes(start_date.getMinutes());
-
-		end_time.setHours(end_date.getHours());
-		end_time.setMinutes(end_date.getMinutes());
-
-		return (end_time - start_time) / (1000*60);
-	};
-
-	var HoursBar = (function(){
+    HoursBar = (function () {
 
 		var item_options;
 
 		item_options = {
-			onClick: function() {},
+			onClick: function () {},
 			background: 'blue'
 		};
 
@@ -142,40 +110,72 @@ var HourChart = (function() {
 			this.hour_bar.style.position = 'absolute';
 		}
 
-		HoursBar.prototype.setPosition = function(position_x) {
+		HoursBar.prototype.setPosition = function (position_x) {
 			this.hour_bar.style.top = '5px';
 			this.hour_bar.style.left = position_x + 'px';
 		};
 
-		HoursBar.prototype.setWidth = function(_width) {
+		HoursBar.prototype.setWidth = function (_width) {
 			this.hour_bar.style.width = _width + 'px';
 		};
 
 		return HoursBar;
 
-	})();
+	}());
 
-	HourChart.prototype.add = function(start_time, end_time, item_options) {
-		var bar, minutes_point, minutes, hours_between_space, bar_x, total_minutes;
+	Object.prototype.extend = function (obj) {
+        var i;
 
-		hours_between_space = calculateHoursBetweenSpace(chartDiv.offsetWidth);
-		minutes_between_space = calculateMinutesBetweenSpace(hours_between_space);
+        for (i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                this[i] = obj[i];
+            }
+        }
+    };
 
-		minutes = calculateTimeDiff(start_time, end_time);
-		minutes_width = (minutes * minutes_between_space);
+    pad2 = function (number) {
+		return (number < 10 ? '0' : '') + number;
+	};
 
-		total_minutes = parseInt(start_time.getHours() * 60) + parseInt(start_time.getMinutes());
+	insertElement = function (target, element) {
+		target.appendChild(element);
+	};
 
-		bar_x = (total_minutes * minutes_between_space) + (hours_between_space / 2);
+	getHourSpace = function (chart_w) {
+		return (chart_w / 25);
+	};
+
+	getMinuteSpace = function (hour_space) {
+		return (hour_space / 60);
+	};
+
+	calculateTimeDiff = function (start_date, end_date) {
+		return Math.round(end_date - start_date) / 60000;
+	};
+
+	HourChart.prototype.add = function (start_date, end_date, item_options) {
+		var bar, minute_space, minutes, hour_space, bar_x, total_minutes,
+			tmp_start_date, tmp_end_date, minute_width;
+
+		hour_space = getHourSpace(chartDiv.offsetWidth);
+		minute_space = getMinuteSpace(hour_space);
+
+		minutes = calculateTimeDiff(start_date, end_date);
+
+		minute_width = (minutes * minute_space);
+
+		total_minutes = parseInt(start_date.getHours() * 60, 10) + parseInt(start_date.getMinutes(), 10);
+
+		bar_x = (minutes * minute_space) + (hour_space / 2);
 
 		bar = new HoursBar(item_options);
 		bar.setPosition(bar_x);
 
-		bar.setWidth(minutes_width);
+		bar.setWidth(minute_width);
 
-		if(typeof item_options !== 'undefined' && item_options.onClick) {
+		if (typeof item_options !== 'undefined' && item_options.onClick) {
 			bar.hour_bar.style.cursor = 'pointer';
-			bar.hour_bar.onclick = function() {
+			bar.hour_bar.onclick = function () {
 				item_options.onClick();
 			};
 		}
@@ -188,9 +188,8 @@ var HourChart = (function() {
 	};
 
 	return HourChart;
-
-})();
+}());
 
 var hour_chart = new HourChart('hour_chart_1');
 
-hour_chart.add(new Date('2015-01-01 18:10'), new Date('2015-01-01 19:15'));
+hour_chart.add(new Date(2015,2,5,18,10,0), new Date(2015,2,5,19,12,59));
