@@ -217,10 +217,3 @@ var HourChart = (function() {
 	return HourChart;
 
 })();
-
-var hour_chart = new HourChart('hour_chart_1');
-
-hour_chart.add(new Date(2015,2,6,16,0,0), new Date(2015,2,7,10,30,0), {"background": "black"});
-hour_chart.add(new Date(2015,2,7,12,27,0), new Date(2015,2,7,13,27,0));
-hour_chart.add(new Date(2015,2,7,13,28,0), new Date(2015,2,7,13,31,0));
-hour_chart.add(new Date(2015,2,8,15,27,0), new Date(2015,2,7,13,27,0), {"background": "red"});
