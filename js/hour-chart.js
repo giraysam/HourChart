@@ -13,11 +13,10 @@ var HourChart = (function() {
 	function HourChart(_chartDiv, _options) {
 
 		if (!_chartDiv) {
-			alert('div not found');
-			return false;
+			throw("Chart div not found");
 		}
 
-		options.extend(_options);
+		extend(options, _options);
 
 		init(_chartDiv);
 	}
@@ -26,6 +25,10 @@ var HourChart = (function() {
 		var i, hours, hours_between_space, chart_div_w, hour_split, half_split;
 
 		chartDiv = document.getElementById(_chartDiv);
+
+		if (chartDiv === null) {
+			throw("Chart div not found");
+		}
 
 		chart_div_w = chartDiv.offsetWidth;
 
@@ -82,13 +85,13 @@ var HourChart = (function() {
 		insertElement(chartDiv, scalaDiv);
 	};
 
-	Object.prototype.extend = function(obj) {
-       for (var i in obj) {
-          if (obj.hasOwnProperty(i)) {
-             this[i] = obj[i];
-          }
-       }
-    };
+	var extend = function(obj, props) {
+		for(var prop in props) {
+			if(props.hasOwnProperty(prop)) {
+				obj[prop] = props[prop];
+			}
+    	}
+	};
 
 	var pad2 = function(number) {
 		return (number < 10 ? '0' : '') + number;
