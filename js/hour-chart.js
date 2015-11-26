@@ -7,7 +7,8 @@ var HourChart = (function() {
 		hourBackground: '#EDECEC',
 		chartBackground: '#DAD9D9',
 		hourSplitBackground: '#ffffff',
-		halfSplitBackground: '#ffffff'
+		halfSplitBackground: '#ffffff',
+		delay: 1
 	};
 
 	function HourChart(_chartDiv, _options) {
@@ -17,6 +18,82 @@ var HourChart = (function() {
 		}
 
 		extend(options, _options);
+		
+		/**
+		 * to calculate x position for hour.
+		 *
+		 * x = x position
+		 * H = Hour
+		 * MD = Minute Distance
+		 * HD = Hour Distance
+		 *
+		 * x = ((H*60) * MD) +(HD / 2)
+		 */
+		this.add = function(start_date, end_date, item_options) {
+			var bar, hours_between_space, start_minutes, end_minutes, scala_width,
+			start_x, end_x, date_diff, start_date_minutes, end_date_minutes,
+			total_minutes, _width;
+
+			start_date_minutes = end_date_minutes = 0;
+
+			hours_between_space = calculateHoursBetweenSpace(chartDiv.offsetWidth);
+			minutes_between_space = calculateMinutesBetweenSpace(hours_between_space);
+
+			scala_width = 25 * hours_between_space;
+
+			date_diff = getDateDiff(start_date, end_date);
+
+			if (date_diff < 0) {
+				start_date_minutes = 0; 
+				end_date_minutes = 0;
+			}
+			else if (date_diff > 0) {
+				start_date_minutes = 0;
+				end_date_minutes = 24 * date_diff * 60;
+			}
+
+			start_minutes = start_date_minutes + parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
+			end_minutes = end_date_minutes + parseInt(end_date.getHours() * 60) + parseInt(end_date.getMinutes());
+
+			total_minutes = end_minutes - start_minutes;
+
+			start_x = (start_minutes * minutes_between_space) + (hours_between_space / 2);
+			end_x = (end_minutes * minutes_between_space) + (hours_between_space / 2);
+
+			bar = new HoursBar(item_options);
+
+			if (date_diff < 0) {
+				bar.setPosition(start_x);
+				_width = scala_width - start_x;
+				// bar.setWidth(_width);
+			}
+			else if (date_diff > 0) {
+				bar.setPosition(start_x);
+				_width = scala_width - start_x;
+				// bar.setWidth(_width);
+			}
+			else {
+				bar.setPosition(start_x);
+				_width = end_x - start_x;
+				// bar.setWidth(_width);
+			}
+
+			if(typeof item_options !== 'undefined' && item_options.onClick) {
+				bar.hour_bar.style.cursor = 'pointer';
+				bar.hour_bar.onclick = function() {
+					item_options.onClick();
+				};
+			}
+
+			if (typeof item_options !== 'undefined' && item_options.background) {
+				bar.hour_bar.style.backgroundColor = item_options.background;
+			}
+
+			scalaDiv = document.getElementById('scala_' + _chartDiv);
+			insertElement(scalaDiv, bar.hour_bar);
+		
+			move(bar.hour_bar, _width, quad, options.delay * 1000);
+		};
 
 		init(_chartDiv);
 	}
@@ -39,6 +116,7 @@ var HourChart = (function() {
 		scalaDiv.style.width = chart_div_w + 'px';
 		scalaDiv.style.height = '30px';
 		scalaDiv.style.position = 'relative';
+		scalaDiv.id = "scala_" + _chartDiv; 
 
 		scalaHours.style.backgroundColor = options.hourBackground;
 		scalaHours.style.width = chart_div_w + 'px';
@@ -91,6 +169,44 @@ var HourChart = (function() {
 				obj[prop] = props[prop];
 			}
     	}
+	};
+
+	var animate = function (opts) {
+		var start = new Date   
+
+		var id = setInterval(function() {
+		var timePassed = new Date - start
+		var progress = timePassed / opts.duration
+
+		if (progress > 1) progress = 1
+			
+			var delta = opts.delta(progress)
+			opts.step(delta)
+			
+			if (progress == 1) {
+				clearInterval(id)
+			}
+		}, opts.delay || 10);
+	};
+
+	var move = function (element, to, delta, duration) {
+
+		animate({
+			delay: 10,
+			duration: duration || 1000, // 1 sec by default
+			delta: delta,
+			step: function(delta) {
+				element.style.width = to*delta + "px";
+			}
+		});
+	};
+
+	var circ = function (progress) {
+		return 1 - Math.sin(Math.acos(progress));
+	};
+
+	var quad = function (progress) {
+		return Math.pow(progress, 0.5);
 	};
 
 	var pad2 = function(number) {
@@ -146,77 +262,7 @@ var HourChart = (function() {
 		return HoursBar;
 
 	})();
-
-    /**
-     * to calculate x position for hour.
-     *
-     * x = x position
-     * H = Hour
-     * MD = Minute Distance
-     * HD = Hour Distance
-     *
-     * x = ((H*60) * MD) +(HD / 2)
-     */
-	HourChart.prototype.add = function(start_date, end_date, item_options) {
-		var bar, hours_between_space, start_minutes, end_minutes, scala_width,
-		start_x, end_x, date_diff, start_date_minutes, end_date_minutes,
-		total_minutes;
-
-		start_date_minutes = end_date_minutes = 0;
-
-		hours_between_space = calculateHoursBetweenSpace(chartDiv.offsetWidth);
-		minutes_between_space = calculateMinutesBetweenSpace(hours_between_space);
-
-		scala_width = 25 * hours_between_space;
-
-		date_diff = getDateDiff(start_date, end_date);
-
-		if (date_diff < 0) {
-			start_date_minutes = 24 * date_diff * 60;
-			end_date_minutes = 0;
-		}
-		else if (date_diff > 0) {
-			start_date_minutes = 0;
-			end_date_minutes = 24 * date_diff * 60;
-		}
-
-		start_minutes = start_date_minutes + parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
-		end_minutes = end_date_minutes + parseInt(end_date.getHours() * 60) + parseInt(end_date.getMinutes());
-
-		total_minutes = end_minutes - start_minutes;
-
-		start_x = (start_minutes * minutes_between_space) + (hours_between_space / 2);
-		end_x = (end_minutes * minutes_between_space) + (hours_between_space / 2);
-
-		bar = new HoursBar(item_options);
-
-		if (date_diff < 0) {
-			bar.setPosition(0);
-			bar.setWidth((end_x - start_x) + start_x);
-		}
-		else if (date_diff > 0) {
-			bar.setPosition(start_x);
-			bar.setWidth(scala_width - start_x);
-		}
-		else {
-			bar.setPosition(start_x);
-			bar.setWidth(end_x - start_x);
-		}
-
-		if(typeof item_options !== 'undefined' && item_options.onClick) {
-			bar.hour_bar.style.cursor = 'pointer';
-			bar.hour_bar.onclick = function() {
-				item_options.onClick();
-			};
-		}
-
-		if (typeof item_options !== 'undefined' && item_options.background) {
-			bar.hour_bar.style.backgroundColor = item_options.background;
-		}
-
-		insertElement(scalaDiv, bar.hour_bar);
-	};
-
+ 
 	return HourChart;
 
 })();
