@@ -111,7 +111,8 @@ var HourChart = (function() {
 	}
 
 	var init = function(_chartDiv) {
-		var i, hours, hours_between_space, chart_div_w, hour_split, half_split;
+		var i, hours, hours_between_space, chart_div_w, hour_split, half_split,
+		tmp_hour, tmp_scala;
 
 		chartDiv = document.getElementById(_chartDiv);
 
@@ -133,6 +134,7 @@ var HourChart = (function() {
 		scalaHours.style.backgroundColor = options.hourBackground;
 		scalaHours.style.width = chart_div_w + 'px';
 		scalaHours.style.height = '20px';
+		scalaHours.id = "sh_" + _chartDiv;
 
 		hours_between_space = calculateHoursBetweenSpace(chart_div_w);
 
@@ -171,8 +173,16 @@ var HourChart = (function() {
 			scalaDiv.appendChild(half_split);
 		}
 
-		insertElement(chartDiv, scalaHours);
-		insertElement(chartDiv, scalaDiv);
+		tmp_hour = document.getElementById('sh_' + _chartDiv);
+		tmp_scala = document.getElementById('scala_' + _chartDiv);
+		
+		if(!tmp_hour) {
+			insertElement(chartDiv, scalaHours);
+		}
+
+		if (!tmp_scala) {
+			insertElement(chartDiv, scalaDiv);
+		}
 	};
 
 	var extend = function(obj, props) {
