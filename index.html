@@ -16,8 +16,12 @@
 <body>
 
 <div class="hour-chart" id="hour_chart_1"></div>
+<input type="button" onclick="clear_1()" value="Clear" />
+<input type="button" onclick="add_1()" value="Add" />
 <br />
 <div class="hour-chart" id="hour_chart_2"></div>
+<input type="button" onclick="clear_2()" value="Clear" />
+<input type="button" onclick="add_2()" value="Add" />
 
 <script type="text/javascript" src="js/hour-chart.js"></script>
 <script type="text/javascript">
@@ -27,6 +31,22 @@
     hour_chart.add(new Date(2015,2,6,16,0,0), new Date(2015,2,7,10,30,0));
     hour_chart.add(new Date(2015,2,7,12,27,0), new Date(2015,2,7,13,27,0));
     hour_chart_2.add(new Date(2015,2,7,10,28,0), new Date(2015,2,7,13,31,0));
+
+	function clear_1() {
+		hour_chart.clear();
+	};
+	
+	function clear_2() {
+		hour_chart_2.clear();
+	};
+
+	function add_1() {
+    	hour_chart.add(new Date(2015,2,7,10,0,0), new Date(2015,2,7,11,30,0));
+	};
+
+	function add_2() {
+    	hour_chart_2.add(new Date(2015,2,7,10,0,0), new Date(2015,2,7,11,30,0));
+	};
 </script>
 </body>
 </html>

@@ -61,6 +61,7 @@ var HourChart = (function() {
 			end_x = (end_minutes * minutes_between_space) + (hours_between_space / 2);
 
 			bar = new HoursBar(item_options);
+			bar.hour_bar.className = _chartDiv + "_hour_bar";
 
 			if (date_diff < 0) {
 				bar.setPosition(start_x);
@@ -93,6 +94,17 @@ var HourChart = (function() {
 			insertElement(scalaDiv, bar.hour_bar);
 		
 			move(bar.hour_bar, _width, quad, options.delay * 1000);
+		};
+
+		this.clear = function () {
+			var hour_bars, i;
+			
+			hour_bars = document.body.querySelectorAll('.' + _chartDiv + '_hour_bar');
+
+			for(i = 0; i < hour_bars.length; i++) {
+				hour_bars[i].parentElement.removeChild(hour_bars[i]);
+			}
+			
 		};
 
 		init(_chartDiv);
