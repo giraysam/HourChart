@@ -93,7 +93,7 @@ var HourChart = (function() {
 			scalaDiv = document.getElementById('scala_' + _chartDiv);
 			insertElement(scalaDiv, bar.hour_bar);
 		
-			move(bar.hour_bar, _width, quad, options.delay * 1000);
+			move(bar.hour_bar, (_width - 1), quad, options.delay * 1000);
 		};
 
 		this.clear = function () {
