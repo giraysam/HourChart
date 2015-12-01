@@ -133,7 +133,7 @@ var HourChart = (function() {
 
 		scalaHours.style.backgroundColor = options.hourBackground;
 		scalaHours.style.width = chart_div_w + 'px';
-		scalaHours.style.height = '20px';
+		scalaHours.style.height = '30px';
 		scalaHours.id = "sh_" + _chartDiv;
 
 		hours_between_space = calculateHoursBetweenSpace(chart_div_w);
@@ -144,7 +144,7 @@ var HourChart = (function() {
 			hours.innerHTML = pad2(i);
 			hours.style.fontSize = options.fontSize + 'px';
 			hours.style.position = 'absolute';
-			hours.style.top = '0px';
+			hours.style.top = '5px';
 			hours.style.left = (((i * hours_between_space) + hours_between_space / 2) - options.fontSize / 2) +'px';
 
 			scalaHours.appendChild(hours);
