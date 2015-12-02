@@ -18,7 +18,7 @@ var HourChart = (function() {
 		}
 
 		extend(options, _options);
-		
+
 		/**
 		 * to calculate x position for hour.
 		 *
@@ -34,7 +34,7 @@ var HourChart = (function() {
 			start_x, end_x, date_diff, start_date_minutes, end_date_minutes,
 			total_minutes, _width;
 
-			start_date_minutes = end_date_minutes = 0;
+			start_date_minutes = end_date_minutes = total_minutes = 0;
 
 			hours_between_space = calculateHoursBetweenSpace(chartDiv.offsetWidth);
 			minutes_between_space = calculateMinutesBetweenSpace(hours_between_space);
@@ -44,7 +44,7 @@ var HourChart = (function() {
 			date_diff = getDateDiff(start_date, end_date);
 
 			if (date_diff < 0) {
-				start_date_minutes = 0; 
+				start_date_minutes = 0;
 				end_date_minutes = 0;
 			}
 			else if (date_diff > 0) {
@@ -55,28 +55,37 @@ var HourChart = (function() {
 			start_minutes = start_date_minutes + parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
 			end_minutes = end_date_minutes + parseInt(end_date.getHours() * 60) + parseInt(end_date.getMinutes());
 
-			total_minutes = end_minutes - start_minutes;
+			if (date_diff == 0) {
+				total_minutes = end_minutes - start_minutes;
+			}
+			else if (date_diff < 0) {
+				total_minutes = end_minutes - start_minutes - (24 * date_diff * 60);
+			}
 
-			start_x = (start_minutes * minutes_between_space) + (hours_between_space / 2);
+			start_x = (start_minutes * minutes_between_space) + (hours_between_space / 2) + 1;
 			end_x = (end_minutes * minutes_between_space) + (hours_between_space / 2);
 
 			bar = new HoursBar(item_options);
 			bar.hour_bar.className = _chartDiv + "_hour_bar";
 
+			bar.hour_bar.setAttribute('title',
+				timeToText(total_minutes) + " " +
+				pad2(start_date.getHours()) + ":" + pad2(start_date.getMinutes()) + " - " +
+				pad2(end_date.getHours()) + ":" + pad2(end_date.getMinutes())
+			);
+
 			if (date_diff < 0) {
 				bar.setPosition(start_x);
 				_width = scala_width - start_x;
-				// bar.setWidth(_width);
+
 			}
 			else if (date_diff > 0) {
 				bar.setPosition(start_x);
 				_width = scala_width - start_x;
-				// bar.setWidth(_width);
 			}
 			else {
 				bar.setPosition(start_x);
 				_width = end_x - start_x;
-				// bar.setWidth(_width);
 			}
 
 			if(typeof item_options !== 'undefined' && item_options.onClick) {
@@ -92,19 +101,19 @@ var HourChart = (function() {
 
 			scalaDiv = document.getElementById('scala_' + _chartDiv);
 			insertElement(scalaDiv, bar.hour_bar);
-		
-			move(bar.hour_bar, (_width - 1), quad, options.delay * 1000);
+
+			move(bar.hour_bar, (_width), quad, options.delay * 1000);
 		};
 
 		this.clear = function () {
 			var hour_bars, i;
-			
+
 			hour_bars = document.body.querySelectorAll('.' + _chartDiv + '_hour_bar');
 
 			for(i = 0; i < hour_bars.length; i++) {
 				hour_bars[i].parentElement.removeChild(hour_bars[i]);
 			}
-			
+
 		};
 
 		init(_chartDiv);
@@ -129,7 +138,7 @@ var HourChart = (function() {
 		scalaDiv.style.width = chart_div_w + 'px';
 		scalaDiv.style.height = '30px';
 		scalaDiv.style.position = 'relative';
-		scalaDiv.id = "scala_" + _chartDiv; 
+		scalaDiv.id = "scala_" + _chartDiv;
 
 		scalaHours.style.backgroundColor = options.hourBackground;
 		scalaHours.style.width = chart_div_w + 'px';
@@ -175,7 +184,7 @@ var HourChart = (function() {
 
 		tmp_hour = document.getElementById('sh_' + _chartDiv);
 		tmp_scala = document.getElementById('scala_' + _chartDiv);
-		
+
 		if(!tmp_hour) {
 			insertElement(chartDiv, scalaHours);
 		}
@@ -194,17 +203,17 @@ var HourChart = (function() {
 	};
 
 	var animate = function (opts) {
-		var start = new Date   
+		var start = new Date
 
 		var id = setInterval(function() {
 		var timePassed = new Date - start
 		var progress = timePassed / opts.duration
 
 		if (progress > 1) progress = 1
-			
+
 			var delta = opts.delta(progress)
 			opts.step(delta)
-			
+
 			if (progress == 1) {
 				clearInterval(id)
 			}
@@ -221,6 +230,44 @@ var HourChart = (function() {
 				element.style.width = to*delta + "px";
 			}
 		});
+	};
+
+	var timeToText = function (minute) {
+		var _minute = parseInt(minute),
+			_hour = 0,
+			_diff = 0,
+			_format = "",
+			_hourText = "saat",
+			_minuteText = "dakika",
+			_dayText = "gün";
+
+		if (_minute < 60) {
+			_format = _minute +  " " + _minuteText;
+		}
+		else if (_minute >= 60 && _minute < 1440) {
+			_hour = Math.floor(_minute / 60);
+			_minute = _minute - (_hour * 60);
+			
+			_format = _hour + " " +_hourText;
+
+			if (_minute)
+				_format += " " + _minute + " " + _minuteText;
+		}
+		else {
+			_day = Math.floor(_minute / 24 / 60);
+			_hour = Math.floor(_minute / 60) - (_day * 24);
+			_minute = _minute - (_day * 24 * 60) - (_hour * 60);
+			
+			_format = _day + " " + _dayText;
+			
+			if (_hour)
+			  _format += " " + _hour + " " + _hourText;
+			
+			if (_minute)
+			  _format += " " + _minute + " " + _minuteText;
+		}
+
+		return _format;
 	};
 
 	var circ = function (progress) {
@@ -284,7 +331,7 @@ var HourChart = (function() {
 		return HoursBar;
 
 	})();
- 
+
 	return HourChart;
 
 })();
