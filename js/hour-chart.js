@@ -89,10 +89,14 @@ var HourChart = (function() {
 			}
 
 			if(typeof item_options !== 'undefined' && item_options.onClick) {
-				bar.hour_bar.style.cursor = 'pointer';
-				bar.hour_bar.onclick = function() {
-					item_options.onClick();
-				};
+				if (item_options.onClick.handle) {
+					var params = item_options.onClick.params || [];
+					
+					bar.hour_bar.style.cursor = 'pointer';
+					bar.hour_bar.onclick = function() {
+						item_options.onClick.handle.apply(this, params);
+					};
+				}
 			}
 
 			if (typeof item_options !== 'undefined' && item_options.background) {
