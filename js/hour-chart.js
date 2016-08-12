@@ -8,7 +8,10 @@ var HourChart = (function() {
 		chartBackground: '#DAD9D9',
 		hourSplitBackground: '#ffffff',
 		halfSplitBackground: '#ffffff',
-		delay: 1
+		delay: 1,
+		hourText: "saat",
+		minuteText: "dakika",
+		dayText: "gün"
 	};
 
 	function HourChart(_chartDiv, _options) {
@@ -32,9 +35,9 @@ var HourChart = (function() {
 		this.add = function(start_date, end_date, item_options) {
 			var bar, hours_between_space, start_minutes, end_minutes, scala_width,
 			start_x, end_x, date_diff, start_date_minutes, end_date_minutes,
-			total_minutes, _width;
+			total_day, total_hour, total_minutes, _width;
 
-			start_date_minutes = end_date_minutes = total_minutes = 0;
+			start_date_minutes = end_date_minutes = total_minutes = total_hour = total_day = 0;
 
 			hours_between_space = calculateHoursBetweenSpace(chartDiv.offsetWidth);
 			minutes_between_space = calculateMinutesBetweenSpace(hours_between_space);
@@ -43,27 +46,37 @@ var HourChart = (function() {
 
 			date_diff = getDateDiff(start_date, end_date);
 
-			if (date_diff < 0) {
-				start_date_minutes = 0;
-				end_date_minutes = 0;
-			}
-			else if (date_diff > 0) {
-				start_date_minutes = 0;
-				end_date_minutes = 24 * date_diff * 60;
+			start_minutes = parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
+
+			total_hour = 24 - start_date.getHours();
+			total_hour = total_hour + end_date.getHours();
+
+			if (total_hour >= 24) {
+				total_hour = total_hour - 24;
+			} else {
+				date_diff = 0;
 			}
 
-			start_minutes = start_date_minutes + parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
-			end_minutes = end_date_minutes + parseInt(end_date.getHours() * 60) + parseInt(end_date.getMinutes());
+			total_day = Math.abs(date_diff * 24);
+			total_hour = total_day + total_hour;
 
-			if (date_diff == 0) {
-				total_minutes = end_minutes - start_minutes;
-			}
-			else if (date_diff < 0) {
-				total_minutes = end_minutes - start_minutes - (24 * date_diff * 60);
+			total_minutes = 60 - start_date.getMinutes();
+			total_minutes = total_minutes + end_date.getMinutes();
+
+			if (total_minutes >= 60) {
+				total_minutes = total_minutes - 60;
 			}
 
-			start_x = (start_minutes * minutes_between_space) + (hours_between_space / 2) + 1;
-			end_x = (end_minutes * minutes_between_space) + (hours_between_space / 2);
+			total_minutes = (total_hour * 60) + total_minutes;
+
+			_width = total_minutes * minutes_between_space;
+
+			start_x = ((start_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
+
+			if (date_diff < 0) { 
+				start_x = (_width - start_x) * -1;
+				_width = _width + (total_minutes - Math.abs(date_diff) * 24 * 60) * minutes_between_space;
+			}
 
 			bar = new HoursBar(item_options);
 			bar.hour_bar.className = _chartDiv + "_hour_bar";
@@ -74,19 +87,7 @@ var HourChart = (function() {
 				pad2(end_date.getHours()) + ":" + pad2(end_date.getMinutes())
 			);
 
-			if (date_diff < 0) {
-				bar.setPosition(start_x);
-				_width = scala_width - start_x;
-
-			}
-			else if (date_diff > 0) {
-				bar.setPosition(start_x);
-				_width = scala_width - start_x;
-			}
-			else {
-				bar.setPosition(start_x);
-				_width = end_x - start_x;
-			}
+			bar.setPosition(start_x);
 
 			if(typeof item_options !== 'undefined' && item_options.onClick) {
 				if (item_options.onClick.handle) {
@@ -142,11 +143,12 @@ var HourChart = (function() {
 		scalaDiv.style.width = chart_div_w + 'px';
 		scalaDiv.style.height = '30px';
 		scalaDiv.style.position = 'relative';
+		scalaDiv.style.overflow = 'hidden';
 		scalaDiv.id = "scala_" + _chartDiv;
 
 		scalaHours.style.backgroundColor = options.hourBackground;
 		scalaHours.style.width = chart_div_w + 'px';
-		scalaHours.style.height = '30px';
+		scalaHours.style.height = '20px';
 		scalaHours.id = "sh_" + _chartDiv;
 
 		hours_between_space = calculateHoursBetweenSpace(chart_div_w);
@@ -157,7 +159,7 @@ var HourChart = (function() {
 			hours.innerHTML = pad2(i);
 			hours.style.fontSize = options.fontSize + 'px';
 			hours.style.position = 'absolute';
-			hours.style.top = '5px';
+			hours.style.top = '2px';
 			hours.style.left = (((i * hours_between_space) + hours_between_space / 2) - options.fontSize / 2) +'px';
 
 			scalaHours.appendChild(hours);
@@ -240,35 +242,32 @@ var HourChart = (function() {
 		var _minute = parseInt(minute),
 			_hour = 0,
 			_diff = 0,
-			_format = "",
-			_hourText = "saat",
-			_minuteText = "dakika",
-			_dayText = "gün";
+			_format = "";
 
 		if (_minute < 60) {
-			_format = _minute +  " " + _minuteText;
+			_format = _minute +  " " + options.minuteText;
 		}
 		else if (_minute >= 60 && _minute < 1440) {
 			_hour = Math.floor(_minute / 60);
 			_minute = _minute - (_hour * 60);
 			
-			_format = _hour + " " +_hourText;
+			_format = _hour + " " +options.hourText;
 
 			if (_minute)
-				_format += " " + _minute + " " + _minuteText;
+				_format += " " + _minute + " " + options.minuteText;
 		}
 		else {
 			_day = Math.floor(_minute / 24 / 60);
 			_hour = Math.floor(_minute / 60) - (_day * 24);
 			_minute = _minute - (_day * 24 * 60) - (_hour * 60);
 			
-			_format = _day + " " + _dayText;
+			_format = _day + " " + options.dayText;
 			
 			if (_hour)
-			  _format += " " + _hour + " " + _hourText;
+			  _format += " " + _hour + " " + options.hourText;
 			
 			if (_minute)
-			  _format += " " + _minute + " " + _minuteText;
+			  _format += " " + _minute + " " + options.minuteText;
 		}
 
 		return _format;
