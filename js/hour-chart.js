@@ -47,6 +47,7 @@ var HourChart = (function() {
 			date_diff = getDateDiff(start_date, end_date);
 
 			start_minutes = parseInt(start_date.getHours() * 60) + parseInt(start_date.getMinutes());
+			end_minutes = parseInt(end_date.getHours() * 60) + parseInt(end_date.getMinutes());
 
 			total_hour = 24 - start_date.getHours();
 			total_hour = total_hour + end_date.getHours();
@@ -71,11 +72,12 @@ var HourChart = (function() {
 
 			_width = total_minutes * minutes_between_space;
 
-			start_x = ((start_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
-
-			if (date_diff < 0) { 
+			if (date_diff < 0) {
+				start_x = ((end_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
 				start_x = (_width - start_x) * -1;
-				_width = _width + (total_minutes - Math.abs(date_diff) * 24 * 60) * minutes_between_space;
+
+			} else {
+				start_x = ((start_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
 			}
 
 			bar = new HoursBar(item_options);
