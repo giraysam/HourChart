@@ -32,7 +32,7 @@ var HourChart = (function() {
 		 *
 		 * x = ((H*60) * MD) +(HD / 2)
 		 */
-		this.add = function(start_date, end_date, item_options) {
+		this.add = function(selected_date, start_date, end_date, item_options) {
 			var bar, hours_between_space, start_minutes, end_minutes, scala_width,
 			start_x, end_x, date_diff, start_date_minutes, end_date_minutes,
 			total_day, total_hour, total_minutes, _width;
@@ -54,11 +54,16 @@ var HourChart = (function() {
 
 			if (total_hour >= 24) {
 				total_hour = total_hour - 24;
-			} else {
-				date_diff = 0;
 			}
 
-			total_day = Math.abs(date_diff * 24);
+			total_day = Math.abs(date_diff) * 24;
+
+			if (total_hour < 24) {
+				if (date_diff != 0) {
+					total_day = (Math.abs(date_diff) - 1) * 24;
+				}
+			}
+			
 			total_hour = total_day + total_hour;
 
 			total_minutes = 60 - start_date.getMinutes();
@@ -66,17 +71,19 @@ var HourChart = (function() {
 
 			if (total_minutes >= 60) {
 				total_minutes = total_minutes - 60;
+			} else {
+				total_hour -= 1;
 			}
 
 			total_minutes = (total_hour * 60) + total_minutes;
 
 			_width = total_minutes * minutes_between_space;
 
-			if (date_diff < 0) {
-				start_x = ((end_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
-				start_x = (_width - start_x) * -1;
-
-			} else {
+			if (selected_date.getDate() > start_date.getDate()) {
+				start_x = 0;
+				_width = ((end_date.getHours() * 60) + end_date.getMinutes() + 30) * minutes_between_space;
+			}
+			else {
 				start_x = ((start_minutes * minutes_between_space) + (hours_between_space / 2) + 1);
 			}
 
